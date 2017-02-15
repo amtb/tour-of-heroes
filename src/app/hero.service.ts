@@ -9,6 +9,8 @@ import { Hero } from './hero';
 export class HeroService {
 	
 	private heroesUrl = 'api/heroes';
+
+	private headers = new Headers({'Content-Type': 'application/json'});
 	
 	constructor(private http: Http){}
 
@@ -31,6 +33,28 @@ export class HeroService {
 			// Simulate server latency with 2 second delay
 			setTimeout(() => resolve(this.getHeroes()), 2000);
 		});
+	};
+
+	create(heroName: string): Promise<Hero> {
+		var hero = {name: heroName};
+		return this.http.post(this.heroesUrl, JSON.stringify(hero), {headers: this.headers})
+					.toPromise()
+					.then(response => response.json().data)
+					.catch(this.handleError);
+	};
+
+	update(hero: Hero): Promise<Hero> {
+		var url = `${this.heroesUrl}/${hero.id}`;
+		return this.http.put(url, JSON.stringify(hero), {headers: this.headers})
+				   .toPromise()
+				   .then(() => hero)
+				   .catch(this.handleError);
+	};
+
+	delete(heroId: number): Promise<void> {
+		var url = `${this.heroesUrl}/${heroId}`;
+		return this.http.delete(url, {headers: this.headers})
+				.toPromise().then(() => null).catch(this.handleError);
 	};
 	
 	handleError(error: any): Promise<any> {
